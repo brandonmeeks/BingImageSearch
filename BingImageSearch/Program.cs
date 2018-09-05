@@ -14,7 +14,7 @@ namespace BingImageSearch
         // **********************************************
 
         // Replace the accessKey string value with your valid access key.
-        const string accessKey = "enter key here";
+        const string path = "../../../key.txt";
 
         // Verify the endpoint URI.  At this writing, only one endpoint is used for Bing
         // search APIs.  In the future, regional endpoints may be available.  If you
@@ -33,6 +33,13 @@ namespace BingImageSearch
 
         static void Main()
         {
+
+            string accessKey;
+            using (StreamReader reader = new StreamReader(path))
+            {
+                accessKey = reader.ReadToEnd();
+            }
+
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             if (accessKey.Length == 32)
@@ -63,6 +70,13 @@ namespace BingImageSearch
         /// </summary>
         static SearchResult BingImageSearch(string searchQuery)
         {
+
+            string accessKey;
+            using (StreamReader reader = new StreamReader(path))
+            {
+                accessKey = reader.ReadToEnd();
+            }
+
             // Construct the URI of the search request
             var uriQuery = uriBase + "?q=" + Uri.EscapeDataString(searchQuery);
 
