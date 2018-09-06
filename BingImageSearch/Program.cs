@@ -27,7 +27,7 @@ namespace BingImageSearch
         static void Main()
         {
 
-            string accessKey = FetchAccessKey();
+            var accessKey = FetchAccessKey();
 
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -35,10 +35,10 @@ namespace BingImageSearch
             {
 
                 Console.Write("Enter search term: ");
-                string searchTerm = Console.ReadLine();
+                var searchTerm = Console.ReadLine();
                 Console.WriteLine("Searching images for: " + searchTerm);
-                byte[] image = BingImageSearch(searchTerm, accessKey);
-                saveImage(image);
+                var image = BingImageSearch(searchTerm, accessKey);
+                SaveImage(image);
             }
             else
             {
@@ -71,26 +71,23 @@ namespace BingImageSearch
             var uriQuery = uriBase + "?q=" + Uri.EscapeDataString(searchQuery);
 
             // Perform the Web request and get the response
-            WebRequest request = HttpWebRequest.Create(uriQuery);
+            var request = HttpWebRequest.Create(uriQuery);
             request.Headers["Ocp-Apim-Subscription-Key"] = accessKey;
-            HttpWebResponse response = (HttpWebResponse) request.GetResponseAsync().Result;
-            string json = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            var response = (HttpWebResponse) request.GetResponseAsync().Result;
+            var json = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
             //extract first search result's contentUrl and name
             dynamic results = JsonConvert.DeserializeObject(json);
-            JArray value = results.value;
-            JToken firstResult = value.First;
-            string name = firstResult.SelectToken("name").ToString();
-            string contentUrl = firstResult.SelectToken("contentUrl").ToString();
+            var contentUrl = results.value[0].contentUrl.ToString();
             Console.WriteLine(contentUrl);
 
             //Perform second web request to get image response
             request = HttpWebRequest.Create(contentUrl);
             response = (HttpWebResponse) request.GetResponse();
-            Stream stream = response.GetResponseStream();
-            MemoryStream memStream = new MemoryStream();
+            var stream = response.GetResponseStream();
+            var memStream = new MemoryStream();
             stream.CopyTo(memStream);
-            byte[] image = memStream.ToArray();
+            var image = memStream.ToArray();
 
             return image;
 
@@ -98,12 +95,12 @@ namespace BingImageSearch
         }
 
         //Save image to disk
-        static void saveImage(byte[] image)
+        static void SaveImage(byte[] image)
         {
-            string filePath = "../../../savedImages/picture.jpg";
+            var filePath = "../../../savedImages/picture.jpg";
             FileStream fs = File.Create(filePath);
 
-            foreach (byte b in image)
+            foreach (var b in image)
             {
                 fs.WriteByte(b);
             }
