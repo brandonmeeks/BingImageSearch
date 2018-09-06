@@ -3,6 +3,8 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BingImageSearch
 {
@@ -29,6 +31,12 @@ namespace BingImageSearch
         {
             public String jsonResult;
             public Dictionary<String, String> relevantHeaders;
+        }
+
+        struct SearchResult2
+        {
+            public String name;
+            
         }
 
         static void Main()
@@ -92,6 +100,11 @@ namespace BingImageSearch
                 jsonResult = json,
                 relevantHeaders = new Dictionary<String, String>()
             };
+
+            dynamic results = JsonConvert.DeserializeObject(json);
+            JArray value = results.value;
+            JToken firstResult = value.First;
+            Console.WriteLine(firstResult.SelectToken("contentUrl").ToString());
 
             // Extract Bing HTTP headers
             foreach (String header in response.Headers)
