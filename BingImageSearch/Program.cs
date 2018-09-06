@@ -14,24 +14,20 @@ namespace BingImageSearch
 
         static void Main()
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             var accessKey = ReadFile("../../../key.txt");
 
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            if (accessKey.Length == 32)
-            {
-
-                Console.Write("Enter search term: ");
-                var searchTerm = Console.ReadLine();
-                Console.WriteLine("Searching images for: " + searchTerm);
-                var image = BingImageSearch(searchTerm, accessKey);
-                SaveImage(image, "../../../savedImages/picture.jpg");
-            }
-            else
+            if (accessKey.Length != 32)
             {
                 Console.WriteLine("Invalid Bing Search API subscription key!");
-                Console.WriteLine("Please paste yours into the source code.");
+                return;
             }
+
+            Console.Write("Enter search term: ");
+            var searchTerm = Console.ReadLine();
+            Console.WriteLine("Searching images for: " + searchTerm);
+            var image = BingImageSearch(searchTerm, accessKey);
+            SaveImage(image, "../../../savedImages/picture.jpg");
 
         }
 
