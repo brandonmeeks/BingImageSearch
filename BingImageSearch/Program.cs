@@ -24,21 +24,6 @@ namespace BingImageSearch
         // the endpoint for your Bing search instance in your Azure dashboard.
         const string uriBase = "https://api.cognitive.microsoft.com/bing/v7.0/images/search";
 
-        const string searchTerm = "puppies";
-
-        // Used to return image search results including relevant headers
-        struct SearchResult
-        {
-            public String jsonResult;
-            public Dictionary<String, String> relevantHeaders;
-        }
-
-        struct SearchResult2
-        {
-            public String name;
-            
-        }
-
         static void Main()
         {
 
@@ -52,16 +37,12 @@ namespace BingImageSearch
 
             if (accessKey.Length == 32)
             {
+
+                Console.Write("Enter search term: ");
+                string searchTerm = Console.ReadLine();
                 Console.WriteLine("Searching images for: " + searchTerm);
 
-                SearchResult result = BingImageSearch(searchTerm);
-
-                Console.WriteLine("\nRelevant HTTP Headers:\n");
-                foreach (var header in result.relevantHeaders)
-                    Console.WriteLine(header.Key + ": " + header.Value);
-
-                Console.WriteLine("\nJSON Response:\n");
-                Console.WriteLine(JsonPrettyPrint(result.jsonResult));
+                Console.WriteLine(BingImageSearch(searchTerm));
             }
             else
             {
@@ -69,14 +50,14 @@ namespace BingImageSearch
                 Console.WriteLine("Please paste yours into the source code.");
             }
 
-            Console.Write("\nPress Enter to exit ");
-            Console.ReadLine();
+            //Console.Write("\nPress Enter to exit ");
+            //Console.ReadLine();
         }
 
         /// <summary>
         /// Performs a Bing Image search and return the results as a SearchResult.
         /// </summary>
-        static SearchResult BingImageSearch(string searchQuery)
+        static String BingImageSearch(string searchQuery)
         {
 
             string accessKey;
@@ -94,98 +75,32 @@ namespace BingImageSearch
             HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
             string json = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
-            // Create result object for return
-            var searchResult = new SearchResult()
-            {
-                jsonResult = json,
-                relevantHeaders = new Dictionary<String, String>()
-            };
-
+            //extract first search result's contentUrl
             dynamic results = JsonConvert.DeserializeObject(json);
             JArray value = results.value;
             JToken firstResult = value.First;
-            Console.WriteLine(firstResult.SelectToken("contentUrl").ToString());
+            string name = firstResult.SelectToken("name").ToString();
+            string contentUrl = firstResult.SelectToken("contentUrl").ToString();
+            Console.WriteLine(contentUrl);
 
-            // Extract Bing HTTP headers
-            foreach (String header in response.Headers)
+            //Perform second web request to get image response
+            request = HttpWebRequest.Create(contentUrl);
+            response = (HttpWebResponse) request.GetResponse();
+            Stream stream = response.GetResponseStream();
+
+            //Save image to disk
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead = 0;
+            string filePath = "../../../savedImages/picture.jpg";
+
+            FileStream fs = File.Create(filePath);
+            while ((bytesRead = stream.Read(buffer, 0, bufferSize)) != 0)
             {
-                if (header.StartsWith("BingAPIs-") || header.StartsWith("X-MSEdge-"))
-                    searchResult.relevantHeaders[header] = response.Headers[header];
+                fs.Write(buffer, 0, bytesRead);
             }
 
-            return searchResult;
-        }
-
-        /// <summary>
-        /// Formats the given JSON string by adding line breaks and indents.
-        /// </summary>
-        /// <param name="json">The raw JSON string to format.</param>
-        /// <returns>The formatted JSON string.</returns>
-        static string JsonPrettyPrint(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-                return string.Empty;
-
-            json = json.Replace(Environment.NewLine, "").Replace("\t", "");
-
-            StringBuilder sb = new StringBuilder();
-            bool quote = false;
-            bool ignore = false;
-            char last = ' ';
-            int offset = 0;
-            int indentLength = 2;
-
-            foreach (char ch in json)
-            {
-                switch (ch)
-                {
-                    case '"':
-                        if (!ignore) quote = !quote;
-                        break;
-                    case '\\':
-                        if (quote && last != '\\') ignore = true;
-                        break;
-                }
-
-                if (quote)
-                {
-                    sb.Append(ch);
-                    if (last == '\\' && ignore) ignore = false;
-                }
-                else
-                {
-                    switch (ch)
-                    {
-                        case '{':
-                        case '[':
-                            sb.Append(ch);
-                            sb.Append(Environment.NewLine);
-                            sb.Append(new string(' ', ++offset * indentLength));
-                            break;
-                        case '}':
-                        case ']':
-                            sb.Append(Environment.NewLine);
-                            sb.Append(new string(' ', --offset * indentLength));
-                            sb.Append(ch);
-                            break;
-                        case ',':
-                            sb.Append(ch);
-                            sb.Append(Environment.NewLine);
-                            sb.Append(new string(' ', offset * indentLength));
-                            break;
-                        case ':':
-                            sb.Append(ch);
-                            sb.Append(' ');
-                            break;
-                        default:
-                            if (quote || ch != ' ') sb.Append(ch);
-                            break;
-                    }
-                }
-                last = ch;
-            }
-
-            return sb.ToString().Trim();
+            return "Image saved successfully.";
         }
     }
 }
