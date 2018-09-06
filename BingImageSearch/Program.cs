@@ -37,8 +37,8 @@ namespace BingImageSearch
                 Console.Write("Enter search term: ");
                 string searchTerm = Console.ReadLine();
                 Console.WriteLine("Searching images for: " + searchTerm);
-
-                Console.WriteLine(BingImageSearch(searchTerm, accessKey));
+                byte[] image = BingImageSearch(searchTerm, accessKey);
+                saveImage(image);
             }
             else
             {
@@ -65,7 +65,7 @@ namespace BingImageSearch
         /// <summary>
         /// Performs a Bing Image search and saves the first result to disk.
         /// </summary>
-        static String BingImageSearch(string searchQuery, string accessKey)
+        static byte[] BingImageSearch(string searchQuery, string accessKey)
         {
             // Construct the URI of the search request
             var uriQuery = uriBase + "?q=" + Uri.EscapeDataString(searchQuery);
@@ -73,7 +73,7 @@ namespace BingImageSearch
             // Perform the Web request and get the response
             WebRequest request = HttpWebRequest.Create(uriQuery);
             request.Headers["Ocp-Apim-Subscription-Key"] = accessKey;
-            HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
+            HttpWebResponse response = (HttpWebResponse) request.GetResponseAsync().Result;
             string json = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
             //extract first search result's contentUrl and name
@@ -88,20 +88,25 @@ namespace BingImageSearch
             request = HttpWebRequest.Create(contentUrl);
             response = (HttpWebResponse) request.GetResponse();
             Stream stream = response.GetResponseStream();
+            MemoryStream memStream = new MemoryStream();
+            stream.CopyTo(memStream);
+            byte[] image = memStream.ToArray();
 
-            //Save image to disk
-            int bufferSize = 1024;
-            byte[] buffer = new byte[bufferSize];
-            int bytesRead = 0;
+            return image;
+
+
+        }
+
+        //Save image to disk
+        static void saveImage(byte[] image)
+        {
             string filePath = "../../../savedImages/picture.jpg";
-
             FileStream fs = File.Create(filePath);
-            while ((bytesRead = stream.Read(buffer, 0, bufferSize)) != 0)
-            {
-                fs.Write(buffer, 0, bytesRead);
-            }
 
-            return "Image saved successfully.";
+            foreach (byte b in image)
+            {
+                fs.WriteByte(b);
+            }
         }
     }
 }
