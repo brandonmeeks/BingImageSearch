@@ -56,7 +56,7 @@ namespace BingImageSearch
             var response = (HttpWebResponse) request.GetResponseAsync().Result;
             var json = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
-            //extract first search result's contentUrl and name
+            //extract first search result's contentUrl
             dynamic results = JsonConvert.DeserializeObject(json);
             var contentUrl = results.value[0].contentUrl.ToString();
 
