@@ -27,11 +27,7 @@ namespace BingImageSearch
         static void Main()
         {
 
-            string accessKey;
-            using (StreamReader reader = new StreamReader(path))
-            {
-                accessKey = reader.ReadToEnd();
-            }
+            string accessKey = FetchAccessKey();
 
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -42,7 +38,7 @@ namespace BingImageSearch
                 string searchTerm = Console.ReadLine();
                 Console.WriteLine("Searching images for: " + searchTerm);
 
-                Console.WriteLine(BingImageSearch(searchTerm));
+                Console.WriteLine(BingImageSearch(searchTerm, accessKey));
             }
             else
             {
@@ -52,18 +48,25 @@ namespace BingImageSearch
 
         }
 
-        /// <summary>
-        /// Performs a Bing Image search and saves the first result to disk.
+        ///<summary>
+        ///Fetches API access key for use
         /// </summary>
-        static String BingImageSearch(string searchQuery)
+        static String FetchAccessKey()
         {
-
             string accessKey;
             using (StreamReader reader = new StreamReader(path))
             {
                 accessKey = reader.ReadToEnd();
             }
 
+            return accessKey;
+        }
+
+        /// <summary>
+        /// Performs a Bing Image search and saves the first result to disk.
+        /// </summary>
+        static String BingImageSearch(string searchQuery, string accessKey)
+        {
             // Construct the URI of the search request
             var uriQuery = uriBase + "?q=" + Uri.EscapeDataString(searchQuery);
 
