@@ -50,12 +50,10 @@ namespace BingImageSearch
                 Console.WriteLine("Please paste yours into the source code.");
             }
 
-            //Console.Write("\nPress Enter to exit ");
-            //Console.ReadLine();
         }
 
         /// <summary>
-        /// Performs a Bing Image search and return the results as a SearchResult.
+        /// Performs a Bing Image search and saves the first result to disk.
         /// </summary>
         static String BingImageSearch(string searchQuery)
         {
@@ -75,7 +73,7 @@ namespace BingImageSearch
             HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().Result;
             string json = new StreamReader(response.GetResponseStream()).ReadToEnd();
 
-            //extract first search result's contentUrl
+            //extract first search result's contentUrl and name
             dynamic results = JsonConvert.DeserializeObject(json);
             JArray value = results.value;
             JToken firstResult = value.First;
